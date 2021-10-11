@@ -311,7 +311,7 @@ class KittiDB:
                 center = parsed_line['xyz_camera']
                 wlh = parsed_line['wlh']
                 yaw_camera = parsed_line['yaw_camera']
-                name = parsed_line['name']
+                name = parsed_line['name'].lower()
                 score = parsed_line['score']
 
                 # Optional: Filter classes.
