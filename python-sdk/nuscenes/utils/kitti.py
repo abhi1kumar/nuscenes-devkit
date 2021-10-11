@@ -46,12 +46,17 @@ class KittiDB:
 
     def __init__(self,
                  root: str = '/data/sets/kitti',
-                 splits: Tuple[str, ...] = ('train',)):
+                 splits: Tuple[str, ...] = ('train',),
+                 output_dir: str= None):
         """
         :param root: Base folder for all KITTI data.
         :param splits: Which splits to load.
         """
         self.root = root
+        if output_dir is None:
+            self.output_dir = self.root
+        else:
+            self.output_dir = output_dir
         self.tables = ('calib', 'image_2', 'label_2', 'velodyne')
         self._kitti_fileext = {'calib': 'txt', 'image_2': 'png', 'label_2': 'txt', 'velodyne': 'bin'}
 
@@ -203,13 +208,21 @@ class KittiDB:
         folder, filename = KittiDB.standardize_sample_token(token)
         kitti_fileext = {'calib': 'txt', 'image_2': 'png', 'label_2': 'txt', 'velodyne': 'bin'}
 
+        output_path_flag = False
+        if 'output' in root:
+            output_path_flag = True
+            folder = root
+
         ending = kitti_fileext[table]
 
         if token.startswith('test_') and table == 'label_2':
             filepath = None
             print('No cheating! The test set has no labels.')
         else:
-            filepath = osp.join(root, folder, table, '{}.{}'.format(filename, ending))
+            if output_path_flag:
+                filepath = osp.join(root, '{}.{}'.format(filename, ending))
+            else:
+                filepath = osp.join(root, folder, table, '{}.{}'.format(filename, ending))
 
         return filepath
 
@@ -286,7 +299,8 @@ class KittiDB:
             # No boxes to return for the test set.
             return boxes
 
-        with open(KittiDB.get_filepath(token, 'label_2', root=self.root), 'r') as f:
+        # print(KittiDB.get_filepath(token, 'label_2', root=self.output_dir))
+        with open(KittiDB.get_filepath(token, 'label_2', root=self.output_dir), 'r') as f:
             for line in f:
                 # Parse this line into box information.
                 parsed_line = self.parse_label_line(line)

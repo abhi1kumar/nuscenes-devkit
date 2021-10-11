@@ -60,7 +60,8 @@ class KittiConverter:
                  lidar_name: str = 'LIDAR_TOP',
                  image_count: int = 10,
                  nusc_version: str = 'v1.0-mini',
-                 split: str = 'mini_train'):
+                 split: str = 'mini_train',
+                 output_dir: str= None):
         """
         :param nusc_kitti_dir: Where to write the KITTI-style annotations.
         :param cam_name: Name of the camera to export. Note that only one camera is allowed in KITTI.
@@ -75,6 +76,7 @@ class KittiConverter:
         self.image_count = image_count
         self.nusc_version = nusc_version
         self.split = split
+        self.output_dir = output_dir
 
         # Create nusc_kitti_dir.
         if not os.path.isdir(self.nusc_kitti_dir):
@@ -279,8 +281,8 @@ class KittiConverter:
         # Dummy meta data, please adjust accordingly.
         if meta is None:
             meta = {
-                'use_camera': False,
-                'use_lidar': True,
+                'use_camera': True,
+                'use_lidar': False,
                 'use_radar': False,
                 'use_map': False,
                 'use_external': False,
@@ -290,7 +292,7 @@ class KittiConverter:
         results = {}
 
         # Load the KITTI dataset.
-        kitti = KittiDB(root=self.nusc_kitti_dir, splits=(self.split, ))
+        kitti = KittiDB(root=self.nusc_kitti_dir, splits=(self.split, ), output_dir= self.output_dir)
 
         # Get assignment of scenes to splits.
         split_logs = create_splits_logs(self.split, self.nusc)
@@ -302,6 +304,7 @@ class KittiConverter:
         for sample_token in sample_tokens:
             # Get the KITTI boxes we just generated in LIDAR frame.
             kitti_token = '%s_%s' % (self.split, sample_token)
+            print(sample_token)
             boxes = kitti.get_boxes(token=kitti_token)
 
             # Convert KITTI boxes to nuScenes detection challenge result format.
@@ -315,7 +318,10 @@ class KittiConverter:
             'meta': meta,
             'results': results
         }
-        submission_path = os.path.join(self.nusc_kitti_dir, 'submission.json')
+        if self.output_dir is None:
+            submission_path = os.path.join(self.nusc_kitti_dir, 'submission.json')
+        else:
+            submission_path = os.path.join(self.output_dir.replace("data", ""), 'submission.json') 
         print('Writing submission to: %s' % submission_path)
         with open(submission_path, 'w') as f:
             json.dump(submission, f, indent=2)

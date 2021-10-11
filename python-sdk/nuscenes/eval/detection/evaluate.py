@@ -1,6 +1,10 @@
 # nuScenes dev-kit.
 # Code written by Holger Caesar & Oscar Beijbom, 2018.
 
+"""
+    Sample Run:
+    python evaluate.py --result_path /home/abhinav/project/prevolution/output/groumd_nms_cuda10_1/results/results_test/submission.json --output_dir /home/abhinav/project/prevolution/output/groumd_nms_cuda10_1/results/results_test/ --eval_set mini_train --version v1.0-mini --plot_examples 0 --render_curves 0
+"""
 import argparse
 import json
 import os
@@ -260,7 +264,7 @@ if __name__ == "__main__":
     # Settings.
     parser = argparse.ArgumentParser(description='Evaluate nuScenes detection results.',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('result_path', type=str, help='The submission as a JSON file.')
+    parser.add_argument('--result_path', type=str, help='The submission as a JSON file.')
     parser.add_argument('--output_dir', type=str, default='~/nuscenes-metrics',
                         help='Folder to store result metrics, graphs and example visualizations.')
     parser.add_argument('--eval_set', type=str, default='val',
