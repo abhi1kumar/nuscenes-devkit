@@ -242,8 +242,8 @@ class DetectionEval:
         class_aps = metrics_summary['mean_dist_aps']
         class_tps = metrics_summary['label_tp_errors']
         for class_name in class_aps.keys():
-            print('%s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f'
-                  % (class_name, class_aps[class_name],
+            print('%12s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f'
+                  % (class_name[:12], class_aps[class_name],
                      class_tps[class_name]['trans_err'],
                      class_tps[class_name]['scale_err'],
                      class_tps[class_name]['orient_err'],
