@@ -305,7 +305,15 @@ class KittiConverter:
             # Get the KITTI boxes we just generated in LIDAR frame.
             kitti_token = '%s_%s' % (self.split, sample_token)
             # print(sample_token)
-            boxes = kitti.get_boxes(token=kitti_token)
+
+            # Pass ego_pose and other information to get in global coordinates
+            # https://github.com/nutonomy/nuscenes-devkit/issues/538#issuecomment-774821319
+            sample = self.nusc.get('sample', sample_token)
+            sample_data = self.nusc.get('sample_data', sample['data']['LIDAR_TOP'])
+            pose_record = self.nusc.get('ego_pose', sample_data['ego_pose_token'])
+            cs_record = self.nusc.get('calibrated_sensor', sample_data['calibrated_sensor_token'])
+
+            boxes = kitti.get_boxes(token=kitti_token, pose_record= pose_record, cs_record= cs_record)
 
             # Convert KITTI boxes to nuScenes detection challenge result format.
             sample_results = [self._box_to_sample_result(sample_token, box) for box in boxes]

@@ -282,7 +282,9 @@ class KittiDB:
     def get_boxes(self,
                   token: str,
                   filter_classes: List[str] = None,
-                  max_dist: float = None) -> List[Box]:
+                  max_dist: float = None,
+                  pose_record: np.array = None,
+                  cs_record: np.array= None) -> List[Box]:
         """
         Load up all the boxes associated with a sample.
         Boxes are in nuScenes lidar frame.
@@ -341,6 +343,14 @@ class KittiDB:
 
                 # 4: Transform to nuScenes LIDAR coord system.
                 box.rotate(self.kitti_to_nu_lidar)
+
+                # 5. Translate the box center point to follow the nuScenes global coordinates
+                # Ref https://github.com/nutonomy/nuscenes-devkit/issues/538#issuecomment-774821319
+                if (pose_record is not None) and (cs_record is not None):
+                    box.rotate(Quaternion(cs_record['rotation']))
+                    box.translate(np.array(cs_record['translation']))
+                    box.rotate(Quaternion(pose_record['rotation']))
+                    box.translate(np.array(pose_record['translation']))
 
                 # Set score or NaN.
                 box.score = score
