@@ -329,7 +329,13 @@ class KittiConverter:
         if self.output_dir is None:
             submission_path = os.path.join(self.nusc_kitti_dir, 'submission.json')
         else:
-            submission_path = os.path.join(self.output_dir.replace("data", ""), 'submission.json') 
+            name_split = self.output_dir.split("/")
+            last = name_split[-1]
+            if last == "data" or last == "label_2":
+                temp_dir = "/".join(name_split[:-2])
+            else:
+                temp_dir = self.output_dir
+            submission_path = os.path.join(temp_dir, 'submission.json')
         print('Writing submission to: %s' % submission_path)
         with open(submission_path, 'w') as f:
             json.dump(submission, f, indent=2)
