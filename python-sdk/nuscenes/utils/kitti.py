@@ -209,7 +209,11 @@ class KittiDB:
         kitti_fileext = {'calib': 'txt', 'image_2': 'png', 'label_2': 'txt', 'velodyne': 'bin'}
 
         output_path_flag = False
-        if 'output' in root:
+        if 'output' in root or 'label_2' in root:
+            # TODO: Something like root != KittiDB.root:
+            # If other than root directory, that means we do not use the format
+            # root, folder, table, '{}.{}' for files
+            # but use root, '{}.{}' for files
             output_path_flag = True
             folder = root
 
