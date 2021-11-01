@@ -332,7 +332,7 @@ class KittiConverter:
             name_split = self.output_dir.split("/")
             last = name_split[-1]
             if last == "data" or last == "label_2":
-                temp_dir = "/".join(name_split[:-2])
+                temp_dir = "/".join(name_split[:-1])
             else:
                 temp_dir = self.output_dir
             submission_path = os.path.join(temp_dir, 'submission.json')
