@@ -71,6 +71,7 @@ class KittiConverter:
         :param split: Dataset split to use.
         """
         self.nusc_kitti_dir = os.path.expanduser(nusc_kitti_dir)
+        self.cam_name_list = {'CAM_FRONT': '0', 'CAM_FRONT_LEFT': '1', 'CAM_FRONT_RIGHT': '2', 'CAM_BACK': '3', 'CAM_BACK_LEFT': '4', 'CAM_BACK_RIGHT': '5'}
         self.cam_name = cam_name
         self.lidar_name = lidar_name
         self.image_count = image_count
@@ -84,6 +85,10 @@ class KittiConverter:
 
         # Select subset of the data to look at.
         self.nusc = NuScenes(version=nusc_version)
+
+    def get_dst_file_name(self, folder, sample_token, extension, cam_name):
+        dst_file_name = os.path.join(folder, sample_token + '_' + self.cam_name_list[cam_name] + extension)
+        return dst_file_name
 
     def nuscenes_gt_to_kitti(self) -> None:
         """
@@ -163,7 +168,8 @@ class KittiConverter:
 
             # Convert image (jpg to png).
             src_im_path = os.path.join(self.nusc.dataroot, filename_cam_full)
-            dst_im_path = os.path.join(image_folder, sample_token + '.png')
+            # dst_im_path = os.path.join(image_folder, sample_token + '.png')
+            dst_im_path = self.get_dst_file_name(folder = image_folder, sample_token= sample_token, extension= '.png', cam_name= self.cam_name)
             if not os.path.exists(dst_im_path):
                 im = Image.open(src_im_path)
                 im.save(dst_im_path, "PNG")
@@ -171,7 +177,8 @@ class KittiConverter:
             # Convert lidar.
             # Note that we are only using a single sweep, instead of the commonly used n sweeps.
             src_lid_path = os.path.join(self.nusc.dataroot, filename_lid_full)
-            dst_lid_path = os.path.join(lidar_folder, sample_token + '.bin')
+            # dst_lid_path = os.path.join(lidar_folder, sample_token + '.bin')
+            dst_lid_path = self.get_dst_file_name(folder = lidar_folder, sample_token= sample_token, extension= '.bin', cam_name= self.cam_name)
             assert not dst_lid_path.endswith('.pcd.bin')
             pcl = LidarPointCloud.from_file(src_lid_path)
             pcl.rotate(kitti_to_nu_lidar_inv.rotation_matrix)  # In KITTI lidar frame.
@@ -190,7 +197,8 @@ class KittiConverter:
             kitti_transforms['R0_rect'] = r0_rect.rotation_matrix  # Cameras are already rectified.
             kitti_transforms['Tr_velo_to_cam'] = np.hstack((velo_to_cam_rot, velo_to_cam_trans.reshape(3, 1)))
             kitti_transforms['Tr_imu_to_velo'] = imu_to_velo_kitti
-            calib_path = os.path.join(calib_folder, sample_token + '.txt')
+            # calib_path = os.path.join(calib_folder, sample_token + '.txt')
+            calib_path = self.get_dst_file_name(folder = calib_folder, sample_token= sample_token, extension= '.txt', cam_name= self.cam_name)
             with open(calib_path, "w") as calib_file:
                 for (key, val) in kitti_transforms.items():
                     val = val.flatten()
@@ -200,7 +208,8 @@ class KittiConverter:
                     calib_file.write('%s: %s\n' % (key, val_str))
 
             # Write label file.
-            label_path = os.path.join(label_folder, sample_token + '.txt')
+            # label_path = os.path.join(label_folder, sample_token + '.txt')
+            label_path = self.get_dst_file_name(folder = label_folder, sample_token= sample_token, extension= '.txt', cam_name= self.cam_name)
             if os.path.exists(label_path):
                 print('Skipping existing file: %s' % label_path)
                 continue
