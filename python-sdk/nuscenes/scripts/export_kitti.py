@@ -2,6 +2,11 @@
 # Code written by Holger Caesar, 2019.
 
 """
+python export_kitti.py nuscenes_gt_to_kitti --nusc_kitti_dir $nusc_kitti_dir --nusc_version v1.0-mini     --split mini_train --image_count 34149
+python export_kitti.py nuscenes_gt_to_kitti --nusc_kitti_dir $nusc_kitti_dir --nusc_version v1.0-trainval --split train --image_count 34149
+python export_kitti.py nuscenes_gt_to_kitti --nusc_kitti_dir $nusc_kitti_dir --nusc_version v1.0-trainval --split val   --image_count 34149
+python export_kitti.py nuscenes_gt_to_kitti --nusc_kitti_dir $nusc_kitti_dir --nusc_version v1.0-test     --split test  --image_count 34149
+
 This script converts nuScenes data to KITTI format and KITTI results to nuScenes.
 It is used for compatibility with software that uses KITTI-style annotations.
 
@@ -61,7 +66,8 @@ class KittiConverter:
                  image_count: int = 10,
                  nusc_version: str = 'v1.0-mini',
                  split: str = 'mini_train',
-                 output_dir: str= None):
+                 output_dir: str= None,
+                 remove_zero_lidar_radar: bool= True):
         """
         :param nusc_kitti_dir: Where to write the KITTI-style annotations.
         :param cam_name: Name of the camera to export. Note that only one camera is allowed in KITTI.
@@ -78,6 +84,7 @@ class KittiConverter:
         self.nusc_version = nusc_version
         self.split = split
         self.output_dir = output_dir
+        self.remove_zero_lidar_radar = remove_zero_lidar_radar
 
         # Create nusc_kitti_dir.
         if not os.path.isdir(self.nusc_kitti_dir):
@@ -87,7 +94,7 @@ class KittiConverter:
         self.nusc = NuScenes(version=nusc_version)
 
     def get_dst_file_name(self, folder, sample_token, extension, cam_name):
-        dst_file_name = os.path.join(folder, sample_token + '_' + self.cam_name_list[cam_name] + extension)
+        dst_file_name = os.path.join(folder, sample_token + extension)
         return dst_file_name
 
     def nuscenes_gt_to_kitti(self) -> None:
@@ -219,6 +226,13 @@ class KittiConverter:
                 for sample_annotation_token in sample_annotation_tokens:
                     sample_annotation = self.nusc.get('sample_annotation', sample_annotation_token)
 
+                    if self.remove_zero_lidar_radar:
+                         # Remove boxes with zero lidar radar
+                         if sample_annotation['num_lidar_pts'] <= 0 and sample_annotation['num_radar_pts'] <= 0:
+                            # Object is potentially fully occluded. Remove them
+                            # See MonoDIS (Multi), Simonelli et al, PAMI 2020, Supplementary Material
+                            continue
+
                     # Get box in LIDAR frame.
                     _, box_lidar_nusc, _ = self.nusc.get_sample_data(lidar_token, box_vis_level=BoxVisibility.NONE,
                                                                      selected_anntokens=[sample_annotation_token])
@@ -247,7 +261,9 @@ class KittiConverter:
                         continue
 
                     # Set dummy score so we can use this file as result.
-                    box_cam_kitti.score = 0
+                    # box_cam_kitti.score = 0
+                    # Write sum of lidar and radar points in place of score which can be used as proxy for occlusion
+                    box_cam_kitti.score = sample_annotation['num_lidar_pts'] + sample_annotation['num_radar_pts']
 
                     # Convert box to output string format.
                     output = KittiDB.box_to_string(name=detection_name, box=box_cam_kitti, bbox_2d=bbox_2d,
