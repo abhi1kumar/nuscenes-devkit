@@ -89,8 +89,16 @@ class KittiDB:
         :return: folder (ex. train, val, test), filename (ex. 000001)
         """
         splits = token.split('_')
-        folder = '_'.join(splits[:-1])
-        filename = splits[-1]
+        last = splits[-1]
+        try:
+            # If the last is an integer 0,1,2,3,4,5
+            # Means multi_channel output
+            _ = int(last)
+            folder = '_'.join(splits[:-2])
+            filename = '_'.join(splits[-2:])
+        except:
+            folder = '_'.join(splits[:-1])
+            filename = splits[-1]
         return folder, filename
 
     @staticmethod
@@ -298,12 +306,13 @@ class KittiDB:
         :return: Boxes in nuScenes lidar reference frame.
         """
         # Get transforms for this sample
-        transforms = self.get_transforms(token, root=self.root)
 
         boxes = []
         if token.startswith('test_'):
             # No boxes to return for the test set.
             return boxes
+
+        transforms = self.get_transforms(token , root=self.root)
 
         # print(KittiDB.get_filepath(token, 'label_2', root=self.output_dir))
         with open(KittiDB.get_filepath(token, 'label_2', root=self.output_dir), 'r') as f:
