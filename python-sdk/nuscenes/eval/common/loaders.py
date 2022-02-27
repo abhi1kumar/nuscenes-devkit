@@ -50,7 +50,7 @@ def load_prediction(result_path: str, max_boxes_per_sample: int, box_cls, verbos
     return all_results, meta
 
 
-def load_gt(nusc: NuScenes, eval_split: str, box_cls, verbose: bool = False) -> EvalBoxes:
+def load_gt(nusc: NuScenes, eval_split: str, box_cls, verbose: bool = False, use_only_cam_front_gt: bool = False) -> EvalBoxes:
     """
     Loads ground truth boxes from DB.
     :param nusc: A NuScenes instance.
@@ -112,6 +112,16 @@ def load_gt(nusc: NuScenes, eval_split: str, box_cls, verbose: bool = False) -> 
         for sample_annotation_token in sample_annotation_tokens:
 
             sample_annotation = nusc.get('sample_annotation', sample_annotation_token)
+
+            if use_only_cam_front_gt:
+                # Keep GT annotations only for CAM_FRONT
+                # https://github.com/nutonomy/nuscenes-devkit/issues/574#issuecomment-805592725
+                # https://github.com/nutonomy/nuscenes-devkit/blob/9b209638ef3dee6d0cdc5ac700c493747f5b35fe/python-sdk/nuscenes/nuscenes.py#L1338
+                _, boxes, _ = nusc.get_sample_data(sample['data']["CAM_FRONT"], selected_anntokens= [sample_annotation_token])
+                # no boxes found with the annotation token, which means this box does not belong to this camera
+                if len(boxes) <= 0:
+                    continue
+
             if box_cls == DetectionBox:
                 # Get label name in detection task and filter unused labels.
                 detection_name = category_to_detection_name(sample_annotation['category_name'])

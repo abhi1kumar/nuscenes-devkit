@@ -51,7 +51,8 @@ class DetectionEval:
                  result_path: str,
                  eval_set: str,
                  output_dir: str = None,
-                 verbose: bool = True):
+                 verbose: bool = True,
+                 use_only_cam_front_gt: bool = False):
         """
         Initialize a DetectionEval object.
         :param nusc: A NuScenes object.
@@ -83,7 +84,7 @@ class DetectionEval:
             print('Initializing nuScenes detection evaluation')
         self.pred_boxes, self.meta = load_prediction(self.result_path, self.cfg.max_boxes_per_sample, DetectionBox,
                                                      verbose=verbose)
-        self.gt_boxes = load_gt(self.nusc, self.eval_set, DetectionBox, verbose=verbose)
+        self.gt_boxes = load_gt(self.nusc, self.eval_set, DetectionBox, verbose=verbose, use_only_cam_front_gt= use_only_cam_front_gt)
 
         assert set(self.pred_boxes.sample_tokens) == set(self.gt_boxes.sample_tokens), \
             "Samples in split doesn't match samples in predictions."
@@ -220,9 +221,10 @@ class DetectionEval:
             json.dump(metrics_summary, f, indent=2)
         with open(os.path.join(self.output_dir, 'metrics_details.json'), 'w') as f:
             json.dump(metric_data_list.serialize(), f, indent=2)
+        multiplier = 100.0
 
         # Print high-level metrics.
-        print('mAP: %.4f' % (metrics_summary['mean_ap']))
+        # print('mAP: %.4f' % (metrics_summary['mean_ap']))
         err_name_mapping = {
             'trans_err': 'mATE',
             'scale_err': 'mASE',
@@ -230,20 +232,27 @@ class DetectionEval:
             'vel_err': 'mAVE',
             'attr_err': 'mAAE'
         }
+        # for tp_name, tp_val in metrics_summary['tp_errors'].items():
+        #     print('%s: %.4f' % (err_name_mapping[tp_name], tp_val))
+        # print('Eval time: %.1fs' % metrics_summary['eval_time'])
+
+        print('-----------------------------------------------------------------------')
+        print('Object Class\tAP[%]\tATE\tASE\tAOE\tAVE\tAAE\tNDS')
+        print('-----------------------------------------------------------------------')
+        print_str  = '%12s'%('Mean')
+        print_str += '\t%5.2f'%(multiplier * metrics_summary['mean_ap'])
         for tp_name, tp_val in metrics_summary['tp_errors'].items():
-            print('%s: %.4f' % (err_name_mapping[tp_name], tp_val))
-        print('NDS: %.4f' % (metrics_summary['nd_score']))
-        print('Eval time: %.1fs' % metrics_summary['eval_time'])
+            print_str += '\t%.2f'%(tp_val)
+        print_str += '\t%.4f'% (metrics_summary['nd_score'])
+        print(print_str)
 
         # Print per-class metrics.
-        print()
-        print('Per-class results:')
-        print('Object Class\tAP\tATE\tASE\tAOE\tAVE\tAAE')
+        # print('Per-class results:')
         class_aps = metrics_summary['mean_dist_aps']
         class_tps = metrics_summary['label_tp_errors']
         for class_name in class_aps.keys():
-            print('%12s\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f'
-                  % (class_name[:12], class_aps[class_name],
+            print('%12s\t%5.2f\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f'
+                  % (class_name[:12], multiplier * class_aps[class_name],
                      class_tps[class_name]['trans_err'],
                      class_tps[class_name]['scale_err'],
                      class_tps[class_name]['orient_err'],
@@ -282,6 +291,8 @@ if __name__ == "__main__":
                         help='Whether to render PR and TP curves to disk.')
     parser.add_argument('--verbose', type=int, default=1,
                         help='Whether to print to stdout.')
+    parser.add_argument('--use_only_cam_front_gt', type=int, default=1,
+                        help='Whether to use only gt of cam_front or all gt.')
     args = parser.parse_args()
 
     result_path_ = os.path.expanduser(args.result_path)
@@ -293,6 +304,7 @@ if __name__ == "__main__":
     plot_examples_ = args.plot_examples
     render_curves_ = bool(args.render_curves)
     verbose_ = bool(args.verbose)
+    use_only_cam_front_gt_ = bool(args.use_only_cam_front_gt)
 
     if config_path == '':
         cfg_ = config_factory('detection_cvpr_2019')
@@ -302,5 +314,5 @@ if __name__ == "__main__":
 
     nusc_ = NuScenes(version=version_, verbose=verbose_, dataroot=dataroot_)
     nusc_eval = DetectionEval(nusc_, config=cfg_, result_path=result_path_, eval_set=eval_set_,
-                              output_dir=output_dir_, verbose=verbose_)
+                              output_dir=output_dir_, verbose=verbose_, use_only_cam_front_gt= use_only_cam_front_gt_)
     nusc_eval.main(plot_examples=plot_examples_, render_curves=render_curves_)
