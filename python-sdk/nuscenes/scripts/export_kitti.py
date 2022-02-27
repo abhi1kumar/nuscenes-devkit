@@ -91,7 +91,7 @@ class KittiConverter:
             os.makedirs(self.nusc_kitti_dir)
 
         # Select subset of the data to look at.
-        self.nusc = NuScenes(version=nusc_version)
+        self.nusc = NuScenes(version=nusc_version, verbose= False)
 
     def get_dst_file_name(self, folder, sample_token, extension, cam_name):
         dst_file_name = os.path.join(folder, sample_token + extension)

@@ -236,6 +236,7 @@ class DetectionEval:
         #     print('%s: %.4f' % (err_name_mapping[tp_name], tp_val))
         # print('Eval time: %.1fs' % metrics_summary['eval_time'])
 
+        print()
         print('-----------------------------------------------------------------------')
         print('Object Class\tAP[%]\tATE\tASE\tAOE\tAVE\tAAE\tNDS')
         print('-----------------------------------------------------------------------')
