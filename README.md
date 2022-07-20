@@ -17,6 +17,7 @@ Welcome to the devkit of the [nuScenes](https://www.nuscenes.org/nuscenes) and [
   - [Map expansion](#map-expansion)
   - [Map versions](#map-versions)
   - [Getting started with nuScenes](#getting-started-with-nuscenes)
+  - [KITTI conversion and evaluation](#kitti-conversion-and-evaluation)
 - [Known issues](#known-issues)
 - [Citation](#citation)
 
@@ -172,6 +173,10 @@ jupyter notebook $HOME/nuscenes-devkit/python-sdk/tutorials/nuscenes_tutorial.ip
 - For instructions related to the object detection task (results format, classes and evaluation metrics), please refer to [this readme](https://github.com/nutonomy/nuscenes-devkit/blob/master/python-sdk/nuscenes/eval/detection/README.md).
 - See the [database schema](https://github.com/nutonomy/nuscenes-devkit/blob/master/docs/schema_nuscenes.md) and [annotator instructions](https://github.com/nutonomy/nuscenes-devkit/blob/master/docs/instructions_nuscenes.md).
 - See the [FAQs](https://github.com/nutonomy/nuscenes-devkit/blob/master/docs/faqs.md).
+
+### KITTI conversion and evaluation
+
+See [convert_nuscenes_to_kitti_format_and_evaluate.sh](convert_nuscenes_to_kitti_format_and_evaluate.sh)
 
 ## Known issues
 Great care has been taken to collate the nuScenes dataset and many users have praised the quality of the data and annotations.
