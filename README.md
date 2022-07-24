@@ -1,9 +1,11 @@
 # nuScenes devkit
-Welcome to the devkit of the [nuScenes](https://www.nuscenes.org/nuscenes) and [nuImages](https://www.nuscenes.org/nuimages) datasets.
+Welcome to the patched devkit of the [nuScenes](https://www.nuscenes.org/nuscenes) and [nuImages](https://www.nuscenes.org/nuimages) datasets. This patched devkit provides `lidar points per box` in the KITTI format and also supports evaluation on nuScenes front camera.
+
 ![](https://www.nuscenes.org/public/images/road.jpg)
 
 ## Overview
 - [Changelog](#changelog)
+- [Citation](#citation)
 - [Devkit setup](#devkit-setup)
 - [nuImages](#nuimages)
   - [nuImages setup](#nuimages-setup) 
@@ -19,7 +21,6 @@ Welcome to the devkit of the [nuScenes](https://www.nuscenes.org/nuscenes) and [
   - [Getting started with nuScenes](#getting-started-with-nuscenes)
   - [KITTI conversion and evaluation](#kitti-conversion-and-evaluation)
 - [Known issues](#known-issues)
-- [Citation](#citation)
 
 ## Changelog
 - Sep. 20, 2021: Devkit v1.1.9: Refactor tracking eval code for custom datasets with different classes.
@@ -44,6 +45,27 @@ Welcome to the devkit of the [nuScenes](https://www.nuscenes.org/nuscenes) and [
 - Nov. 21, 2018: RADAR filtering and multi sweep aggregation.
 - Oct. 4, 2018: Code to parse RADAR data released.
 - Sep. 12, 2018: Devkit for teaser dataset released.
+
+## Citation
+If you find this patched [nuScenes or nuImages](https://arxiv.org/abs/1903.11027) useful in your research, please consider starring the repo and citing:
+
+```Bibtex
+@inproceedings{nuscenes2019,
+  title={{nuScenes: A multimodal dataset for autonomous driving}},
+  author={Holger Caesar and Varun Bankiti and Alex H. Lang and Sourabh Vora and 
+          Venice Erin Liong and Qiang Xu and Anush Krishnan and Yu Pan and 
+          Giancarlo Baldan and Oscar Beijbom},
+  booktitle={CVPR},
+  year={2019}
+}
+
+@inproceedings{kumar2022deviant,
+  title={ {DEVIANT: Depth EquiVarIAnt NeTwork for Monocular $3$D Object Detection}},
+  author={Kumar, Abhinav and Brazil, Garrick and Corona, Enrique and Parchami, Armin and Liu, Xiaoming},
+  booktitle={ECCV},
+  year={2022}
+}
+```
 
 ## Devkit setup
 We use a common devkit for nuScenes and nuImages.
@@ -191,17 +213,5 @@ However, some minor issues remain:
 **Annotations**:
 - A small number of 3d bounding boxes is annotated despite the object being temporarily occluded. For this reason we make sure to **filter objects without lidar or radar points** in the nuScenes benchmarks. See [issue 366](https://github.com/nutonomy/nuscenes-devkit/issues/366).
 
-## Citation
-Please use the following citation when referencing [nuScenes or nuImages](https://arxiv.org/abs/1903.11027):
-```
-@article{nuscenes2019,
-  title={nuScenes: A multimodal dataset for autonomous driving},
-  author={Holger Caesar and Varun Bankiti and Alex H. Lang and Sourabh Vora and 
-          Venice Erin Liong and Qiang Xu and Anush Krishnan and Yu Pan and 
-          Giancarlo Baldan and Oscar Beijbom},
-  journal={arXiv preprint arXiv:1903.11027},
-  year={2019}
-}
-```
 
 ![](https://www.nuscenes.org/public/images/nuscenes-example.png)
